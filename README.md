@@ -10,4 +10,4 @@ The idea behind the repeating event sequence alarm (RESA) is to use a standard d
 To reduce the computational burden of the RESA, only a specified maximum number of template waveforms are saved for each station at any given time. The low computational requirements are intended to create an alarm that can be run in the background for long periods of time with little interference in the computer’s day-to-day processes. 
 
 
-Note: These codes use the old version of the GISMO Waveform Suite (r362). Adaptations for using the new GISMO (https://github.com/geoscience-community-codes/GISMO) should be minimal and may be added in the future. There are also plans to make a Python version of at least the real-time RESA.
+Note: These codes use the old version of the GISMO Toolbox (r362) and the included STA/LTA. Adaptations for using the new GISMO (https://github.com/geoscience-community-codes/GISMO) should be minimal and may be added in the future. There are also plans to make a Python version of at least the real-time RESA.
