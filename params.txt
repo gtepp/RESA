@@ -7,7 +7,7 @@ params.cha.str = 'EHZ,EHZ,EHZ,BHZ,BHZ,BHZ'; % list of channels for each station 
 
 %-- File information
 
-directory = '/Users/username/Documents/Alarm_folder/‘; % directory to save files to
+directory = '/Users/username/Documents/Alarm_folder/'; % directory to save files to
 
 structfile = 'RESA_structures_cron.mat'; % name of structures file
 logfile = 'sequence_log_cron.txt'; % name of log files
@@ -17,7 +17,7 @@ logfile = 'sequence_log_cron.txt'; % name of log files
 
 dbtype = 'WIN'; % database type (IRIS or Winston (WIN, default))
 
-mySource = datasource('winston’,IPaddress,Port); % data source object (Winston source ONLY)
+mySource = datasource('winston',IPaddress,Port); % data source object (Winston source ONLY)
 
 twin = 10.8; % in minutes; data window to search
 % twin includes the time window overlap (set = l_lta + evwin to avoid duplicate events)
