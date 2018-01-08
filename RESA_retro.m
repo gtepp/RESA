@@ -26,6 +26,7 @@
 %
 %   - readcss.m (if using CSS files)
 %   - opencss.m (if using CSS files)
+%   - extractdatairis (if data will be retrieved via irisFetch)
 %
 % - Uses the GISMO Correlation Toolbox and Waveform Suite
 %
