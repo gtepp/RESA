@@ -32,6 +32,8 @@
 %
 % - Requires updated version of adjusttrig.m from GISMO suite to properly
 %       align traces
+%
+% - extractdatairis - only necessary if data will be retrieved via irisFetch
 
 % --------------------
 
