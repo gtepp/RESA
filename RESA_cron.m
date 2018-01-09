@@ -30,8 +30,8 @@
 %
 % - Make sure the toolbox is installed. It is freely avaiable at the above website.
 %
-% - Requires updated version of adjusttrig.m from GISMO suite to properly
-%       align traces
+% - Requires updated version of @correlation/adjusttrig.m from GISMO suite to properly
+%       align traces and updated version @correlation/private/xcorrrow.m
 %
 % - extractdatairis - only necessary if data will be retrieved via irisFetch
 
