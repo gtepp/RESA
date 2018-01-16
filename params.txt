@@ -86,8 +86,6 @@ setpref('Internet','E_mail','Bogo_eventseq.alarm@usgs.gov'); % this can be anyth
 % each row: {email, phone, lv 1 on, lv 1 off, lv 2 on, lv 2 off} (1=email, 2=phone, 0=none)
 sendlist = {'email@mail.com','cellnumber@provider.ext',1,1,1,1;...
     'email@mail.com','cellnumber@provider.ext',2,2,2,2};
-sendtoadd = 'cellnumber@provider.ext'; % additional list to send to (testing for my phone)
-
 
 sendchk = 1; % send a check that code is running (1=yes, 0=no (default))
 sendtochk = {'email@mail.com'}; % list of email addresses to send check alert to
