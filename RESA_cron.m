@@ -39,7 +39,7 @@
 
 % By: Gabrielle Tepp, USGS AVO
 % Created: 3/15/2017
-% Last updated: 12/18/2017
+% Last updated: 2/1/2018
 
 %--------------------------------------------------------------------------%
 
@@ -440,6 +440,8 @@ end
 
                                 stackcobj = waveform(stack(mcobj)); % stack matching template and new event
 
+                                stackcobj = set(stackcobj,'station',sta); % reset station name (i.e. remove added "- stack")
+                                
                                 nonmatches = find((1:length(data.(sta).templates) ~= tnum)); % list of non-matching template #s
 
                                 % add event onset to template list
@@ -606,13 +608,13 @@ end
                                         
                                         % Remove from "on" list
 
-                                        data.(sta).seqon(data.(sta).seqon==data.(sta).tempdata(row(matchtemp(m),1),1)) = [];
+                                        data.(sta).seqon(data.(sta).seqon==data.(sta).tempdata(row(matchtemp(m),1),1),:) = [];
 
                                         % Check for lv 2 status
                                         
                                         if l2chk == 1 && data.(sta).tempdata(row(matchtemp(m)),4) == 1 % if template is lv 2
                                             
-                                            data.(sta).seqonl2(data.(sta).seqonl2==data.(sta).tempdata(row(matchtemp(m),1),1)) = [];
+                                            data.(sta).seqonl2(data.(sta).seqonl2==data.(sta).tempdata(row(matchtemp(m),1),1),:) = [];
                                             
                                             seqstatl2 = 1; % status for new template; equals 1 if any seq to stack are lv 2 on
                                             
@@ -658,13 +660,13 @@ end
                                         
                                     % Remove from "on" list
 
-                                    data.(sta).seqon(data.(sta).seqon==data.(sta).tempdata(ucol(1,1),1)) = [];
+                                    data.(sta).seqon(data.(sta).seqon==data.(sta).tempdata(ucol(1,1),1),:) = [];
 
                                     % Check for lv 2 status
                                     
                                     if l2chk == 1 && data.(sta).tempdata(ucol(1,1),4) == 1 % if template is lv 2
                                         
-                                        data.(sta).seqonl2(data.(sta).seqonl2==data.(sta).tempdata(ucol(1,1),1)) = [];
+                                        data.(sta).seqonl2(data.(sta).seqonl2==data.(sta).tempdata(ucol(1,1),1),:) = [];
                                          
                                         disp(['Template ' num2str(data.(sta).tempdata(ucol(1,1),1))...
                                             ' (' sta ') is currently level 2 but is being merged.'])
@@ -722,7 +724,7 @@ end
 
                                 if seqstat == 1
 
-                                    data.(sta).seqon = [data.(sta).seqon; data.(sta).tempdata(1,1)];
+                                    data.(sta).seqon = [data.(sta).seqon; data.(sta).tempdata(1,1) size(data.(sta).(ntname).evdata,1)];
 
                                     disp(['Merged template ' num2str(data.(sta).tempdata(1,1)) ' (' sta ') is being turned on.'])
                                     
@@ -737,7 +739,7 @@ end
                                 
                                 if l2chk == 1 && seqstatl2 == 1
 
-                                    data.(sta).seqonl2 = [data.(sta).seqonl2; data.(sta).tempdata(1,1)];
+                                    data.(sta).seqonl2 = [data.(sta).seqonl2; data.(sta).tempdata(1,1) size(data.(sta).(ntname).evdata,1)];
 
                                     disp(['Merged template ' num2str(data.(sta).tempdata(1,1)) ' (' sta ') is being turned on for level 2.'])
 
@@ -808,7 +810,7 @@ end
                         
                         % Make list of sequences currently on
                         
-                        data.(sta).seqon = [data.(sta).seqon; data.(sta).tempdata(evseq(row),1)];
+                        data.(sta).seqon = [data.(sta).seqon; data.(sta).tempdata(evseq(row),1) size(data.(sta).(tname).evdata,1)];
                         
                         % if not enough matches and already declared, turn "off" sequence
                         
@@ -830,7 +832,7 @@ end
                         
                         % Remove from "on" list
                         
-                        data.(sta).seqon(data.(sta).seqon==data.(sta).tempdata(evseq(row),1)) = [];
+                        data.(sta).seqon(data.(sta).seqon==data.(sta).tempdata(evseq(row),1),:) = [];
                         
                     end
                     
@@ -863,7 +865,7 @@ end
                             
                             % Make list of sequences currently on lv 2
                             
-                            data.(sta).seqonl2 = [data.(sta).seqonl2; data.(sta).tempdata(evseq(row),1)];
+                            data.(sta).seqonl2 = [data.(sta).seqonl2; data.(sta).tempdata(evseq(row),1) size(data.(sta).(tname).evdata,1)];
                             
                             % if lv 2 requirements no longer met, turn off
                             
@@ -885,7 +887,7 @@ end
                             
                             % Remove from level 2 "on" list
                             
-                            data.(sta).seqonl2(data.(sta).seqonl2==data.(sta).tempdata(evseq(row),1)) = [];
+                            data.(sta).seqonl2(data.(sta).seqonl2==data.(sta).tempdata(evseq(row),1),:) = [];
                             
                             % if seq is turned off but lv 2 is still on, turn it off
                             
@@ -907,7 +909,7 @@ end
                             
                             % Remove from level 2 "on" list
                             
-                            data.(sta).seqonl2(data.(sta).seqonl2==data.(sta).tempdata(evseq(row),1)) = [];
+                            data.(sta).seqonl2(data.(sta).seqonl2==data.(sta).tempdata(evseq(row),1),:) = [];
                             
                         end
                         
@@ -942,8 +944,8 @@ end
         if ~isempty(data.(sta).seqon)
             
             onct = onct + 1; % increase count by one
-            
-            lv1staon = [lv1staon,sta,', ']; % make a list of "on" stations
+
+            lv1staon = [lv1staon,sta,' (',num2str(max(data.(sta).seqon(:,2))),' events), ']; % make a list of "on" stations
             
             % Check to see if it's on preferred list (if there is one)
             
@@ -969,7 +971,7 @@ end
             
             onctl2 = onctl2 + 1;
             
-            lv2staon = [lv2staon,sta,', ']; % make a list of "on" stations
+            lv2staon = [lv2staon,sta,' (',num2str(max(data.(sta).seqonl2(:,2))),' events), ']; % make a list of "on" stations
             
             % Check to see if it's on preferred list (if there's preferred station requirement)
             
