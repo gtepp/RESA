@@ -51,26 +51,28 @@
 
 % By: Gabrielle Tepp, USGS AVO
 % Created: 3/15/2017
-% Last updated: 12/18/2017
+% Last updated: 2/1/2018
 
 %--------------------------------------------------------------------------%
 
 clear variables global; % clear workspace
 warning off % don't display warnings
 
+global data; % make data a global variable so it's visible to functions without passing it
+
 
 %% Hard-wired info
 
 % Set start & end of desired data range
 
-params.time.start.str = '15-Apr 2017 18:00:00'; % start time in a string format
+params.time.start.str = '15-Apr 2017 21:00:00'; % start time in a string format
 params.time.end.str = '16-Apr 2017 06:00:00'; % end time in a string format
 
 % If you want to set SCNL for convenience, else comment out & code will prompt
 
 params.net.str = 'AV'; % currently assumes only one network or array (could easily be changed)
 params.sta.str = 'MAPS,MGOD,MSW ,OKFG,OKNC'; % list of stations being used (names must be same length - whitespaces removed later)
-params.cha.str = 'BHZ,BHZ,EHZ,BHZ,BHZ'; % need same # as stations in same (pair) order
+params.cha.str = 'BHZ,BHZ,BHZ,BHZ,BHZ'; % need same # as stations in same (pair) order
 
 directory = './'; % directory to save files to
 
@@ -79,10 +81,10 @@ logfile = 'test.txt';
 % General data parameters
 
 dbtype = 'WIN'; % database type (Winston WS ('WIN', default),irisFetch ('IRIS'),'files')
+
+%mySource = datasource('winston',IPaddress,Port); % data source object for Winston WS
+mySource = datasource('winston','pubavo1.wr.usgs.gov',16023);
 ftype = 'SAC'; % file type if using files (options: CSS, BIN (binary), SAC)
-
-mySource = datasource('winston',IPaddress,Port); % data source object for Winston WS
-
 datadir = '/directory/data/'; % data file directory if using files
 fileinfo = 'Volc_fileinfo.mat'; % list of file information if using files
 
@@ -139,7 +141,7 @@ seqToffl2 = seqTl2; % in minutes; time period to use for (lv. 2) sequence off
 
 minsta = 2; % min # of stations with seq on needed to send alert
 minreq = 1; % min # of stations required from preferred list to send alert
-reqstastr = 'MAPS,MGOD,OKRE,OKER'; % list of preferred/required stations
+reqstastr = 'MAPS,OKFG'; % list of preferred/required stations
 offwait = 0; % # of extra time windows with no sequences on before level 1 "off" alert is sent (set to 0 for none)
 offwaitl2 = 0; % # of extra time windows with no sequences on before level 2 "off" alert is sent (set to 0 for none)
 seqoffwin = 0; % # of extra time windows to wait before station-level sequence turns "off" (set to 0 for none)
@@ -158,9 +160,10 @@ plseqs = 0; % individual sequences with events and on/off times
 % expfile = 'Volc_explosions.mat'; % file with start/end times of known explosions/eruptions
 % staoutfile = 'Volc_station_outages.mat'; % file with start/end times of known station outages
 
-%sendtoonl2 = {'email@host.com'}; % to test alert notifications
+sendtoon = {'gtepp@usgs.gov'};%'email@host.com'}; % to test alert notifications (comment out if not wanted)
 
-% Write parameters to log file
+
+%% Write parameters to log file
 
 if ~exist([directory logfile],'file')
     
@@ -1082,6 +1085,8 @@ for t = tstrt:(twin - ovlp):(tend - twin)
 
                                 stackcobj = waveform(stack(mcobj)); % stack matching template and new event
 
+                                stackcobj = set(stackcobj,'station',sta); % reset station name (i.e. remove added "- stack")
+                                
                                 nonmatches = find((1:length(data.(sta).templates) ~= tnum)); % list of non-matching template #s
 
                                 % Add event onset to template event list
@@ -1265,13 +1270,13 @@ for t = tstrt:(twin - ovlp):(tend - twin)
 
                                         % Remove from "on" list
 
-                                        data.(sta).seqon(data.(sta).seqon==data.(sta).tempdata(row(matchtemp(m),1),1)) = [];
+                                        data.(sta).seqon(data.(sta).seqon==data.(sta).tempdata(row(matchtemp(m),1),1),:) = [];
 
                                         % Check for lv 2 status
                                         
                                         if l2chk == 1 && data.(sta).tempdata(row(matchtemp(m)),4) == 1 % if template is lv 2
                                             
-                                            data.(sta).seqonl2(data.(sta).seqonl2==data.(sta).tempdata(row(matchtemp(m),1),1)) = [];
+                                            data.(sta).seqonl2(data.(sta).seqonl2==data.(sta).tempdata(row(matchtemp(m),1),1),:) = [];
                                             
                                             data.(sta).seqdectl2 = [data.(sta).seqdectl2;data.(sta).tempdata(row(matchtemp(m),1),1),...
                                                 (t + twin),data.(sta).tempdata(row(matchtemp(m),1),2),2];
@@ -1330,13 +1335,13 @@ for t = tstrt:(twin - ovlp):(tend - twin)
                                     
                                     % Remove from "on" list
 
-                                    data.(sta).seqon(data.(sta).seqon==data.(sta).tempdata(ucol(1,1),1)) = [];
+                                    data.(sta).seqon(data.(sta).seqon==data.(sta).tempdata(ucol(1,1),1),:) = [];
 
                                     % Check for lv 2 status
                                     
                                     if l2chk == 1 && data.(sta).tempdata(ucol(1,1),4) == 1 % if template is lv 2
                                         
-                                        data.(sta).seqonl2(data.(sta).seqonl2==data.(sta).tempdata(ucol(1,1),1)) = [];
+                                        data.(sta).seqonl2(data.(sta).seqonl2==data.(sta).tempdata(ucol(1,1),1),:) = [];
                                         
                                         data.(sta).seqdectl2 = [data.(sta).seqdectl2;data.(sta).tempdata(ucol(1,1),1),(t + twin),...
                                             data.(sta).tempdata(ucol(1,1),2),2];
@@ -1401,7 +1406,7 @@ for t = tstrt:(twin - ovlp):(tend - twin)
 
                                     data.(sta).seqdect = [data.(sta).seqdect;data.(sta).tempdata(1,1),(t + twin),data.(sta).tempdata(1,2),3];
 
-                                    data.(sta).seqon = [data.(sta).seqon; data.(sta).tempdata(1,1)];
+                                    data.(sta).seqon = [data.(sta).seqon; data.(sta).tempdata(1,1) size(data.(sta).(ntname).evdata,1)];
 
                                     disp(['Merged template ' num2str(data.(sta).tempdata(1,1)) ' (' sta ') is being turned on.'])
 
@@ -1418,7 +1423,7 @@ for t = tstrt:(twin - ovlp):(tend - twin)
 
                                     data.(sta).seqdectl2 = [data.(sta).seqdectl2;data.(sta).tempdata(1,1),(t + twin),data.(sta).tempdata(1,2),3];
 
-                                    data.(sta).seqonl2 = [data.(sta).seqonl2; data.(sta).tempdata(1,1)];
+                                    data.(sta).seqonl2 = [data.(sta).seqonl2; data.(sta).tempdata(1,1) size(data.(sta).(ntname).evdata,1)];
 
                                     disp(['Merged template ' num2str(data.(sta).tempdata(1,1)) ' (' sta ') is being turned on for level 2.'])
 
@@ -1512,7 +1517,7 @@ for t = tstrt:(twin - ovlp):(tend - twin)
                         
                         % Make list of sequences currently on
                         
-                        data.(sta).seqon = [data.(sta).seqon; data.(sta).tempdata(evseq(row),1)];
+                        data.(sta).seqon = [data.(sta).seqon; data.(sta).tempdata(evseq(row),1) size(data.(sta).(tname).evdata,1)];
                         
                         % if not enough matches and already declared, turn "off" sequence
                         
@@ -1539,7 +1544,7 @@ for t = tstrt:(twin - ovlp):(tend - twin)
                         
                         % Remove from "on" list
                         
-                        data.(sta).seqon(data.(sta).seqon==data.(sta).tempdata(evseq(row),1)) = [];
+                        data.(sta).seqon(data.(sta).seqon==data.(sta).tempdata(evseq(row),1),:) = [];
                         
                     end
                     
@@ -1586,7 +1591,7 @@ for t = tstrt:(twin - ovlp):(tend - twin)
                             
                             % Make list of sequences currently on lv 2
                             
-                            data.(sta).seqonl2 = [data.(sta).seqonl2; data.(sta).tempdata(evseq(row),1)];
+                            data.(sta).seqonl2 = [data.(sta).seqonl2; data.(sta).tempdata(evseq(row),1)  size(data.(sta).(tname).evdata,1)];
                             
                         % if lv 2 requirements no longer met, turn off
                             
@@ -1613,7 +1618,7 @@ for t = tstrt:(twin - ovlp):(tend - twin)
                             
                             % Remove from level 2 "on" list
                             
-                            data.(sta).seqonl2(data.(sta).seqonl2==data.(sta).tempdata(evseq(row),1)) = [];
+                            data.(sta).seqonl2(data.(sta).seqonl2==data.(sta).tempdata(evseq(row),1),:) = [];
                             
                             % if seq is turned off but lv 2 is still on, turn it off
                             
@@ -1640,7 +1645,7 @@ for t = tstrt:(twin - ovlp):(tend - twin)
                             
                             % Remove from level 2 "on" list
                             
-                            data.(sta).seqonl2(data.(sta).seqonl2==data.(sta).tempdata(evseq(row),1)) = [];
+                            data.(sta).seqonl2(data.(sta).seqonl2==data.(sta).tempdata(evseq(row),1),:) = [];
                             
                         end
                         
@@ -1665,7 +1670,7 @@ for t = tstrt:(twin - ovlp):(tend - twin)
     onctl2 = 0; % always (re)start at 0
     reqctl2 = 0; % always (re)start at 0
     
-%     lv2staon = []; % string list of stations for alert message
+    lv1staon = []; % string list of stations for alert message
     
     for ss = 1:size(params.sta.list,1)
         
@@ -1675,6 +1680,8 @@ for t = tstrt:(twin - ovlp):(tend - twin)
             
             onct = onct + 1;
             
+            lv1staon = [lv1staon,sta,' (',num2str(max(data.(sta).seqon(:,2))),' events), ']; % make a list of "on" stations
+    
             % Check to see if it's on preferred list (if there's preferred station requirement)
             
             if minreq > 0
@@ -1698,8 +1705,6 @@ for t = tstrt:(twin - ovlp):(tend - twin)
         if l2chk == 1 && ~isempty(data.(sta).seqonl2) % check station for sequence(s) on level 2
             
             onctl2 = onctl2 + 1;
-            
-%             lv2staon = [lv2staon,sta,', ']; % make a list of "on" stations
             
             % Check to see if it's on preferred list (if there's preferred station requirement)
             
@@ -1730,6 +1735,21 @@ for t = tstrt:(twin - ovlp):(tend - twin)
         disp(' ')
         disp(['** ' num2str(onct) ' stations (' num2str(reqct) ' required) have at least one sequence in progress!'])
         disp(['Current time: ' datestr(t+twin)])
+
+        if exist('sendtoon','var') == 1
+            
+            % Make figure for alert
+            
+            figname = make_alert_figs(params,directory,'lv2_ON',(t+twin),seqTl2,mySource);
+            
+            % Send email/text notification
+            
+            sendmail(sendtoon,'Event Sequence in Progress!',...
+                [num2str(onct) ' stations have at least one sequence in progress! Time is ' datestr(t+twin) ' UTC. '...
+                10 10 'Sequence parameters: min ' num2str(minev) ' events in ' num2str(seqT*24*60) ' minutes.' 10 10 ...
+                'Stations on (max template): ' 10 lv1staon],figname);
+            
+        end
         
         % Write to log file
         
@@ -1789,18 +1809,7 @@ for t = tstrt:(twin - ovlp):(tend - twin)
             
             alertt.lv2.on = [alertt.lv2.on;(t+twin),onctl2];
             
-%             % Make figure for alert
-%         
-%             figname = make_alert_fig(params,directory,'lv2_ON',(t+twin),seqTl2,mySource);
-%         
-%             % Send email/text notification
-%             
-%             sendmail(sendtoonl2,'Event Sequence at level 2!',...
-%                 [num2str(onctl2) ' stations have at least one sequence at level 2! Time is ' datestr(t+twin) ' UTC. '...
-%                 'Sequence parameters: min ' num2str(minevl2) ' events in ' num2str(seqTl2*24*60) ' minutes.' 10 10 ...
-%                 'Stations on level 2: ' lv2staon(1:end-2)],figname);
-                    
-             alertt.lv2.curon = t + twin; % latest time alert is on
+            alertt.lv2.curon = t + twin; % latest time alert is on
 
          elseif onctl2 >= minsta && reqctl2 >= minreq && curstatl2 == 1 && curstat == 1 % if alert still valid, keep track of time
 
@@ -2536,9 +2545,13 @@ end
 
 %% Function: Make Figure for Alert
 
-function figname = make_alert_fig(params,directory,atype,atime,seqT,mySource)
+function figname = make_alert_figs(params,directory,atype,atime,seqT,mySource)
+
+global data; % make global variables available to function
 
 figure('visible','off'); % make new figure window but don't show on screen
+
+% Make spectrogram
 
 % Get waveforms
 
@@ -2565,11 +2578,56 @@ s = spectralobject(512,462,25,[20 120]);
 
 specgram(s,wfs,'innerLabels',false);
 
-% Save figure (and return filename)
+% Save figure
 
-figname = [directory,'alert_',atype,'_',datestr(atime,'yyyymmdd_HHMMSS'),'.png']; % make figure name (with directory)
+sfigname = [directory,'alert_',atype,'_spec_',datestr(atime,'yyyymmdd_HHMMSS'),'.png']; % make figure name (with directory)
 
-print(figname,'-dpng'); % save figure
+print(sfigname,'-dpng'); % save figure
+
+close; % close figure window
+
+
+% Plot templates
+
+% Get templates of sequences from each station
+
+tempwobj = [];
+
+for ss = 1:size(params.sta.list,1)
+    
+    sta = strcat(params.sta.list(ss,:)); % get station name without whitespaces
+    
+    if ~isempty(data.(sta).seqon) % check station for sequence(s) on
+        
+        % Get template from each "on" sequence and put in waveform object
+        
+        for r = 1:size(data.(sta).seqon,1)
+
+            tempwobj = [tempwobj;data.(sta).templates(data.(sta).tempdata(:,1)==data.(sta).seqon(r,1),1)];
+            
+        end
+        
+    end
+  
+end
+
+% Turn into correlation object and plot
+
+tcobj = correlation(tempwobj);
+
+plot(tcobj,'wiggle');
+
+% Save figure
+
+tfigname = [directory,'alert_',atype,'_temps_',datestr(atime,'yyyymmdd_HHMMSS'),'.png']; % make figure name (with directory)
+
+print(tfigname,'-dpng'); % save figure
+
+close; % close figure window
+
+% Combine figure names into one array
+
+figname = {sfigname;tfigname};
 
 end
 
