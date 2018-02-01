@@ -80,10 +80,10 @@ logfile = 'test.txt';
 
 % General data parameters
 
-dbtype = 'WIN'; % database type (Winston WS ('WIN', default),irisFetch ('IRIS'),'files')
+dbtype = 'IRIS'; % database type (Winston WS ('WIN', default),irisFetch ('IRIS'),'files')
 
 %mySource = datasource('winston',IPaddress,Port); % data source object for Winston WS
-mySource = datasource('winston','pubavo1.wr.usgs.gov',16023);
+
 ftype = 'SAC'; % file type if using files (options: CSS, BIN (binary), SAC)
 datadir = '/directory/data/'; % data file directory if using files
 fileinfo = 'Volc_fileinfo.mat'; % list of file information if using files
@@ -160,7 +160,7 @@ plseqs = 0; % individual sequences with events and on/off times
 % expfile = 'Volc_explosions.mat'; % file with start/end times of known explosions/eruptions
 % staoutfile = 'Volc_station_outages.mat'; % file with start/end times of known station outages
 
-sendtoon = {'gtepp@usgs.gov'};%'email@host.com'}; % to test alert notifications (comment out if not wanted)
+%sendtoon = {'email@host.com'}; % to test alert notifications (comment out if not wanted)
 
 
 %% Write parameters to log file
