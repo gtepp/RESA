@@ -51,7 +51,7 @@
 
 % By: Gabrielle Tepp, USGS AVO
 % Created: 3/15/2017
-% Last updated: 2/1/2018
+% Last updated: 3/16/2018
 
 %--------------------------------------------------------------------------%
 
@@ -1270,13 +1270,13 @@ for t = tstrt:(twin - ovlp):(tend - twin)
 
                                         % Remove from "on" list
 
-                                        data.(sta).seqon(data.(sta).seqon==data.(sta).tempdata(row(matchtemp(m),1),1),:) = [];
+                                        data.(sta).seqon(data.(sta).seqon(:,1)==data.(sta).tempdata(row(matchtemp(m),1),1),:) = [];
 
                                         % Check for lv 2 status
                                         
                                         if l2chk == 1 && data.(sta).tempdata(row(matchtemp(m)),4) == 1 % if template is lv 2
                                             
-                                            data.(sta).seqonl2(data.(sta).seqonl2==data.(sta).tempdata(row(matchtemp(m),1),1),:) = [];
+                                            data.(sta).seqonl2(data.(sta).seqonl2(:,1)==data.(sta).tempdata(row(matchtemp(m),1),1),:) = [];
                                             
                                             data.(sta).seqdectl2 = [data.(sta).seqdectl2;data.(sta).tempdata(row(matchtemp(m),1),1),...
                                                 (t + twin),data.(sta).tempdata(row(matchtemp(m),1),2),2];
@@ -1335,13 +1335,13 @@ for t = tstrt:(twin - ovlp):(tend - twin)
                                     
                                     % Remove from "on" list
 
-                                    data.(sta).seqon(data.(sta).seqon==data.(sta).tempdata(ucol(1,1),1),:) = [];
+                                    data.(sta).seqon(data.(sta).seqon(:,1)==data.(sta).tempdata(ucol(1,1),1),:) = [];
 
                                     % Check for lv 2 status
                                     
                                     if l2chk == 1 && data.(sta).tempdata(ucol(1,1),4) == 1 % if template is lv 2
                                         
-                                        data.(sta).seqonl2(data.(sta).seqonl2==data.(sta).tempdata(ucol(1,1),1),:) = [];
+                                        data.(sta).seqonl2(data.(sta).seqonl2(:,1)==data.(sta).tempdata(ucol(1,1),1),:) = [];
                                         
                                         data.(sta).seqdectl2 = [data.(sta).seqdectl2;data.(sta).tempdata(ucol(1,1),1),(t + twin),...
                                             data.(sta).tempdata(ucol(1,1),2),2];
@@ -1544,7 +1544,7 @@ for t = tstrt:(twin - ovlp):(tend - twin)
                         
                         % Remove from "on" list
                         
-                        data.(sta).seqon(data.(sta).seqon==data.(sta).tempdata(evseq(row),1),:) = [];
+                        data.(sta).seqon(data.(sta).seqon(:,1)==data.(sta).tempdata(evseq(row),1),:) = [];
                         
                     end
                     
@@ -1618,7 +1618,7 @@ for t = tstrt:(twin - ovlp):(tend - twin)
                             
                             % Remove from level 2 "on" list
                             
-                            data.(sta).seqonl2(data.(sta).seqonl2==data.(sta).tempdata(evseq(row),1),:) = [];
+                            data.(sta).seqonl2(data.(sta).seqonl2(:,1)==data.(sta).tempdata(evseq(row),1),:) = [];
                             
                             % if seq is turned off but lv 2 is still on, turn it off
                             
@@ -1645,7 +1645,7 @@ for t = tstrt:(twin - ovlp):(tend - twin)
                             
                             % Remove from level 2 "on" list
                             
-                            data.(sta).seqonl2(data.(sta).seqonl2==data.(sta).tempdata(evseq(row),1),:) = [];
+                            data.(sta).seqonl2(data.(sta).seqonl2(:,1)==data.(sta).tempdata(evseq(row),1),:) = [];
                             
                         end
                         
@@ -2581,7 +2581,7 @@ specgram(s,wfs,'innerLabels',false);
 % Save figure
 
 sfigname = [directory,'alert_',atype,'_spec_',datestr(atime,'yyyymmdd_HHMMSS'),'.png']; % make figure name (with directory)
-
+savefig([sfigname(1:end-3),'fig']); % save as .fig
 print(sfigname,'-dpng'); % save figure
 
 close; % close figure window
@@ -2597,18 +2597,36 @@ for ss = 1:size(params.sta.list,1)
     
     sta = strcat(params.sta.list(ss,:)); % get station name without whitespaces
     
-    if ~isempty(data.(sta).seqon) % check station for sequence(s) on
+    if str2double(atype(3)) == 1
         
-        % Get template from each "on" sequence and put in waveform object
+        if ~isempty(data.(sta).seqon) % check station for sequence(s) on
+            
+            % Get template from each "on" sequence and put in waveform object
+            
+            for r = 1:size(data.(sta).seqon,1)
+                
+                tempwobj = [tempwobj;data.(sta).templates(data.(sta).tempdata(:,1)==data.(sta).seqon(r,1),1)];
+                
+            end
+            
+        end
         
-        for r = 1:size(data.(sta).seqon,1)
-
-            tempwobj = [tempwobj;data.(sta).templates(data.(sta).tempdata(:,1)==data.(sta).seqon(r,1),1)];
+    elseif str2double(atype(3)) == 2
+        
+        if ~isempty(data.(sta).seqonl2) % check station for sequence(s) on
+            
+            % Get template from each "on" sequence and put in waveform object
+            
+            for r = 1:size(data.(sta).seqonl2,1)
+                
+                tempwobj = [tempwobj;data.(sta).templates(data.(sta).tempdata(:,1)==data.(sta).seqonl2(r,1),1)];
+                
+            end
             
         end
         
     end
-  
+    
 end
 
 % Turn into correlation object and plot
@@ -2620,14 +2638,14 @@ plot(tcobj,'wiggle');
 % Save figure
 
 tfigname = [directory,'alert_',atype,'_temps_',datestr(atime,'yyyymmdd_HHMMSS'),'.png']; % make figure name (with directory)
-
+savefig([tfigname(1:end-3),'fig']); % save as .fig
 print(tfigname,'-dpng'); % save figure
 
 close; % close figure window
 
 % Combine figure names into one array
 
-figname = {sfigname;tfigname};
+figname = {sfigname,tfigname};
 
 end
 
