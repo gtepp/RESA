@@ -39,11 +39,13 @@
 
 % By: Gabrielle Tepp, USGS AVO
 % Created: 3/15/2017
-% Last updated: 2/1/2018
+% Last updated: 3/16/2018
 
 %--------------------------------------------------------------------------%
 
 warning off % don't display warnings
+
+global data; % make data a global variable so it's visible to functions without passing it
 
 
 %% Read in parameters from file
@@ -173,7 +175,23 @@ if exist([directory,structfile],'file') == 2
     
     load([directory,structfile]);
     
-else % if files don't exist, initiate alert and tID variables
+else % if files don't exist, initiate data, alert, and tID structures
+    
+    % Initiate data structure
+    
+    for ss = 1:size(params.sta.list,1)
+        
+        sta = strcat(params.sta.list(ss,:));
+        
+        data.(sta).seqon = [];
+        
+        if l2chk == 1
+            
+            data.(sta).seqonl2 = []; % lv 2 on list
+            
+        end
+        
+    end
     
     % Make list of available template ID #s
     
@@ -237,26 +255,6 @@ nowt(1,6) = 0; % set sec = 0 (i.e., floor to nearest minute)
 t = datenum(nowt) - twin; % compute start of time window
 
 tcheck = t;
-
-% Initiate fields
-
-if ~exist('data','var')
-    
-    for ss = 1:size(params.sta.list,1)
-        
-        sta = strcat(params.sta.list(ss,:));
-        
-        data.(sta).seqon = [];
-        
-        if l2chk == 1
-            
-            data.(sta).seqonl2 = []; % lv 2 on list
-            
-        end
-        
-    end
-    
-end
 
 % Start new log file if it doesn't yet exist
 
@@ -608,13 +606,13 @@ end
                                         
                                         % Remove from "on" list
 
-                                        data.(sta).seqon(data.(sta).seqon==data.(sta).tempdata(row(matchtemp(m),1),1),:) = [];
+                                        data.(sta).seqon(data.(sta).seqon(:,1)==data.(sta).tempdata(row(matchtemp(m),1),1),:) = [];
 
                                         % Check for lv 2 status
                                         
                                         if l2chk == 1 && data.(sta).tempdata(row(matchtemp(m)),4) == 1 % if template is lv 2
                                             
-                                            data.(sta).seqonl2(data.(sta).seqonl2==data.(sta).tempdata(row(matchtemp(m),1),1),:) = [];
+                                            data.(sta).seqonl2(data.(sta).seqonl2(:,1)==data.(sta).tempdata(row(matchtemp(m),1),1),:) = [];
                                             
                                             seqstatl2 = 1; % status for new template; equals 1 if any seq to stack are lv 2 on
                                             
@@ -660,13 +658,13 @@ end
                                         
                                     % Remove from "on" list
 
-                                    data.(sta).seqon(data.(sta).seqon==data.(sta).tempdata(ucol(1,1),1),:) = [];
+                                    data.(sta).seqon(data.(sta).seqon(:,1)==data.(sta).tempdata(ucol(1,1),1),:) = [];
 
                                     % Check for lv 2 status
                                     
                                     if l2chk == 1 && data.(sta).tempdata(ucol(1,1),4) == 1 % if template is lv 2
                                         
-                                        data.(sta).seqonl2(data.(sta).seqonl2==data.(sta).tempdata(ucol(1,1),1),:) = [];
+                                        data.(sta).seqonl2(data.(sta).seqonl2(:,1)==data.(sta).tempdata(ucol(1,1),1),:) = [];
                                          
                                         disp(['Template ' num2str(data.(sta).tempdata(ucol(1,1),1))...
                                             ' (' sta ') is currently level 2 but is being merged.'])
@@ -770,7 +768,6 @@ end
             
         end
         
-        
         %% Check for Event Sequences
         
         % if there is template data (i.e. at least one event)
@@ -832,7 +829,7 @@ end
                         
                         % Remove from "on" list
                         
-                        data.(sta).seqon(data.(sta).seqon==data.(sta).tempdata(evseq(row),1),:) = [];
+                        data.(sta).seqon(data.(sta).seqon(:,1)==data.(sta).tempdata(evseq(row),1),:) = [];
                         
                     end
                     
@@ -887,7 +884,7 @@ end
                             
                             % Remove from level 2 "on" list
                             
-                            data.(sta).seqonl2(data.(sta).seqonl2==data.(sta).tempdata(evseq(row),1),:) = [];
+                            data.(sta).seqonl2(data.(sta).seqonl2(:,1)==data.(sta).tempdata(evseq(row),1),:) = [];
                             
                             % if seq is turned off but lv 2 is still on, turn it off
                             
@@ -909,7 +906,7 @@ end
                             
                             % Remove from level 2 "on" list
                             
-                            data.(sta).seqonl2(data.(sta).seqonl2==data.(sta).tempdata(evseq(row),1),:) = [];
+                            data.(sta).seqonl2(data.(sta).seqonl2(:,1)==data.(sta).tempdata(evseq(row),1),:) = [];
                             
                         end
                         
@@ -1018,11 +1015,11 @@ end
         
         if strcmpi(dbtype,'IRIS') == 1
             
-            figname = make_alert_fig(params,directory,'ON',(t+twin),seqT,dbtype);
+            figname = make_alert_figs(params,directory,'ON',(t+twin),seqT,dbtype);
             
         else
             
-            figname = make_alert_fig(params,directory,'ON',(t+twin),seqT,dbtype,mySource);
+            figname = make_alert_figs(params,directory,'ON',(t+twin),seqT,dbtype,mySource);
             
         end
         
@@ -1087,11 +1084,11 @@ end
             
             if strcmpi(dbtype,'IRIS') == 1
                 
-                figname = make_alert_fig(params,directory,'OFF',(t+twin),seqT,dbtype);
+                figname = make_alert_figs(params,directory,'OFF',(t+twin),seqT,dbtype);
                 
             else
                 
-                figname = make_alert_fig(params,directory,'OFF',(t+twin),seqT,dbtype,mySource);
+                figname = make_alert_figs(params,directory,'OFF',(t+twin),seqT,dbtype,mySource);
                 
             end
             
@@ -1177,11 +1174,11 @@ end
             
             if strcmpi(dbtype,'IRIS') == 1
                 
-                figname = make_alert_fig(params,directory,'lv2_ON',(t+twin),seqTl2,dbtype);
+                figname = make_alert_figs(params,directory,'lv2_ON',(t+twin),seqTl2,dbtype);
                 
             else
                 
-                figname = make_alert_fig(params,directory,'lv2_ON',(t+twin),seqTl2,dbtype,mySource);
+                figname = make_alert_figs(params,directory,'lv2_ON',(t+twin),seqTl2,dbtype,mySource);
                 
             end
             
@@ -1249,11 +1246,11 @@ end
                 
                 if strcmpi(dbtype,'IRIS') == 1
                     
-                    figname = make_alert_fig(params,directory,'lv2_OFF',(t+twin),seqTl2,dbtype);
+                    figname = make_alert_figs(params,directory,'lv2_OFF',(t+twin),seqTl2,dbtype);
                     
                 else
                 
-                    figname = make_alert_fig(params,directory,'lv2_OFF',(t+twin),seqTl2,dbtype,mySource);
+                    figname = make_alert_figs(params,directory,'lv2_OFF',(t+twin),seqTl2,dbtype,mySource);
                 
                 end
                 
@@ -1323,7 +1320,7 @@ end
     
     for ss = 1:size(params.sta.list,1)
 
-        sta = strcat(params.sta.list(s,:)); % get station name without any whitespaces
+        sta = strcat(params.sta.list(ss,:)); % get station name without any whitespaces
         
         data.(sta).wf = [];
     
@@ -1340,15 +1337,13 @@ end
 
 %% Function: Make Figure for Alert
 
-function figname = make_alert_fig(params,directory,atype,atime,seqT,dbtype,varargin)
+function figname = make_alert_figs(params,directory,atype,atime,seqT,mySource)
 
-if nargin > 6 && strcmpi(dbtype,'IRIS') == 0 % if Winston data, mySource needs to be included as argument
-    
-    mySource = varargin{1};
-    
-end
+global data; % make global variables available to function
 
 figure('visible','off'); % make new figure window but don't show on screen
+
+% Make spectrogram
 
 % Get waveforms
 
@@ -1358,32 +1353,8 @@ for s = 1:size(params.sta.list,1)
     
     sta = strcat(params.sta.list(s,:));
     
-    if ~isempty(dbtype) && strcmpi(dbtype,'IRIS') == 1
-        
-        % Get data from IRIS
-        
-        tempw = irisFetch.Traces(params.net.list,sta,'--',params.cha.list(s,:),(atime-seqT),atime);
-        
-        if isempty(tempw) == 1 % if no data retrieved
-            
-            w = []; % make empty waveform
-            
-        else % put data into waveform object
-            
-            tempd = extractdatairis(tempw,tempw(1).sampleRate,(atime-seqT),atime,NaN); % combine data "chunks"
-            
-            w = waveform(sta,params.cha.list(s,:),tempw(1).sampleRate,(atime-seqT),tempd); % put into waveform object
-            
-        end
-        
-    else
-        
-        % Get data from AVO Winston
-        
-        scnlList = scnlobject(sta,params.cha.list(s,:),params.net.list,'--');
-        w = waveform(mySource,scnlList,(atime-seqT),atime);
-        
-    end
+    scnlList = scnlobject(sta,params.cha.list(s,:),params.net.list,'--');
+    w = waveform(mySource,scnlList,(atime-seqT),atime);
     
     if ~isempty(w) % if there's data, add to plot
         
@@ -1395,25 +1366,78 @@ end
 
 % Make spectrogram plot
 
-if ~isempty(wfs)
-
 s = spectralobject(512,462,25,[20 120]);
 
-specgram(s,wfs,'fontsize',12);
+specgram(s,wfs,'innerLabels',false);
 
-set(gcf,'Units','pixels','OuterPosition',[50 50 800 1100]); % [left bottom width height]
+% Save figure
 
-% Save figure (and return filename)
+sfigname = [directory,'alert_',atype,'_spec_',datestr(atime,'yyyymmdd_HHMMSS'),'.png']; % make figure name (with directory)
+savefig([sfigname(1:end-3),'fig']); % save as .fig
+print(sfigname,'-dpng'); % save figure
 
-figname = [directory,'alert_',atype,'_',datestr(atime,'yyyymmdd_HHMMSS'),'.png']; % make figure name (with directory)
+close; % close figure window
 
-print(figname,'-dpng'); % save figure
 
-else
+% Plot templates
+
+% Get templates of sequences from each station
+
+tempwobj = [];
+
+for ss = 1:size(params.sta.list,1)
     
-   figname = 'none'; 
+    sta = strcat(params.sta.list(ss,:)); % get station name without whitespaces
+    
+    if str2double(atype(3)) == 1
+        
+        if ~isempty(data.(sta).seqon) % check station for sequence(s) on
+            
+            % Get template from each "on" sequence and put in waveform object
+            
+            for r = 1:size(data.(sta).seqon,1)
+                
+                tempwobj = [tempwobj;data.(sta).templates(data.(sta).tempdata(:,1)==data.(sta).seqon(r,1),1)];
+                
+            end
+            
+        end
+        
+    elseif str2double(atype(3)) == 2
+        
+        if ~isempty(data.(sta).seqonl2) % check station for sequence(s) on
+            
+            % Get template from each "on" sequence and put in waveform object
+            
+            for r = 1:size(data.(sta).seqonl2,1)
+                
+                tempwobj = [tempwobj;data.(sta).templates(data.(sta).tempdata(:,1)==data.(sta).seqonl2(r,1),1)];
+                
+            end
+            
+        end
+        
+    end
     
 end
+
+% Turn into correlation object and plot
+
+tcobj = correlation(tempwobj);
+
+plot(tcobj,'wiggle');
+
+% Save figure
+
+tfigname = [directory,'alert_',atype,'_temps_',datestr(atime,'yyyymmdd_HHMMSS'),'.png']; % make figure name (with directory)
+savefig([tfigname(1:end-3),'fig']); % save as .fig
+print(tfigname,'-dpng'); % save figure
+
+close; % close figure window
+
+% Combine figure names into one array
+
+figname = {sfigname,tfigname};
 
 end
 
