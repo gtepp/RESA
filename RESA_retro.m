@@ -51,7 +51,7 @@
 
 % By: Gabrielle Tepp, USGS AVO
 % Created: 3/15/2017
-% Last updated: 3/16/2018
+% Last updated: 3/19/2018
 
 %--------------------------------------------------------------------------%
 
@@ -178,7 +178,7 @@ if ~exist([directory logfile],'file')
         'minev = %7.2f\nseqT = %7.2f\nminevoff = %7.2f\nseqToff = %7.2f\nl2chk = %7.2f\nminevl2 = %7.2f\n',...
         'seqTl2 = %7.2f\nminevoffl2 = %7.2f\nseqToffl2 = %7.2f\nminsta = %7.2f\nminreq = %7.2f\nreqstastr = %s\n\n'),...
         twin,lf,hf,poles,tempmax,min_sep,min_dur,l_sta,l_lta,threson,thresoff,mincc,maxlag,xcst,xcend,buff,evwin,minev,...
-        seqT,minevoff,seqToff,minevl2,seqTl2,minevoffl2,seqToffl2,minsta,minreq,reqstastr);
+        seqT,minevoff,seqToff,l2chk,minevl2,seqTl2,minevoffl2,seqToffl2,minsta,minreq,reqstastr);
     
 end
 
