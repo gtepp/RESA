@@ -1015,11 +1015,11 @@ end
         
         if strcmpi(dbtype,'IRIS') == 1
             
-            figname = make_alert_figs(params,directory,'ON',(t+twin),seqT,dbtype);
+            figname = make_alert_figs(params,directory,'lv1_ON',(t+twin),seqT,dbtype);
             
         else
             
-            figname = make_alert_figs(params,directory,'ON',(t+twin),seqT,dbtype,mySource);
+            figname = make_alert_figs(params,directory,'lv1_ON',(t+twin),seqT,dbtype,mySource);
             
         end
         
@@ -1084,11 +1084,11 @@ end
             
             if strcmpi(dbtype,'IRIS') == 1
                 
-                figname = make_alert_figs(params,directory,'OFF',(t+twin),seqT,dbtype);
+                figname = make_alert_figs(params,directory,'lv1_OFF',(t+twin),seqT,dbtype);
                 
             else
                 
-                figname = make_alert_figs(params,directory,'OFF',(t+twin),seqT,dbtype,mySource);
+                figname = make_alert_figs(params,directory,'lv1_OFF',(t+twin),seqT,dbtype,mySource);
                 
             end
             

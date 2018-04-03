@@ -1740,7 +1740,7 @@ for t = tstrt:(twin - ovlp):(tend - twin)
             
             % Make figure for alert
             
-            figname = make_alert_figs(params,directory,'lv2_ON',(t+twin),seqTl2,mySource);
+            figname = make_alert_figs(params,directory,'lv1_ON',(t+twin),seqTl2,mySource);
             
             % Send email/text notification
             
