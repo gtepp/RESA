@@ -9,4 +9,6 @@ To reduce the computational burden of the RESA, only a specified maximum number 
 
 Visit the Wiki for more details.
 
+For more information (and citation!), you can also read the paper here: Tepp, G. (2018). A Repeating Event Sequence Alarm for Monitoring Volcanoes. Seismological Research Letters, doi:10.1785/0220170263.
+
 Note: The RESA Matlab code uses GISMO (available here: https://github.com/geoscience-community-codes/GISMO) with a couple edits to files available here. There are also plans to make a Python version of at least the real-time RESA.
