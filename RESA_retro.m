@@ -51,7 +51,7 @@
 
 % By: Gabrielle Tepp, USGS AVO
 % Created: 3/15/2017
-% Last updated: 3/19/2018
+% Last updated: 6/29/2018
 
 %--------------------------------------------------------------------------%
 
@@ -2545,13 +2545,17 @@ end
 
 %% Function: Make Figure for Alert
 
-function figname = make_alert_figs(params,directory,atype,atime,seqT,mySource)
+function figname = make_alert_figs(params,directory,atype,atime,seqT,dbtype,varargin)
 
-global data; % make global variables available to function
+global data;
+
+if nargin > 6 && strcmpi(dbtype,'IRIS') == 0 % if Winston data, mySource needs to be included as argument
+    
+    mySource = varargin{1};
+    
+end
 
 figure('visible','off'); % make new figure window but don't show on screen
-
-% Make spectrogram
 
 % Get waveforms
 
@@ -2561,8 +2565,32 @@ for s = 1:size(params.sta.list,1)
     
     sta = strcat(params.sta.list(s,:));
     
-    scnlList = scnlobject(sta,params.cha.list(s,:),params.net.list,'--');
-    w = waveform(mySource,scnlList,(atime-seqT),atime);
+    if ~isempty(dbtype) && strcmpi(dbtype,'IRIS') == 1
+        
+        % Get data from IRIS
+        
+        tempw = irisFetch.Traces(params.net.list,sta,'--',params.cha.list(s,:),(atime-seqT),atime);
+        
+        if isempty(tempw) == 1 % if no data retrieved
+            
+            w = []; % make empty waveform
+            
+        else % put data into waveform object
+            
+            tempd = extractdatairis(tempw,tempw(1).sampleRate,(atime-seqT),atime,NaN); % combine data "chunks"
+            
+            w = waveform(sta,params.cha.list(s,:),tempw(1).sampleRate,(atime-seqT),tempd); % put into waveform object
+            
+        end
+        
+    else
+        
+        % Get data from AVO Winston
+        
+        scnlList = scnlobject(sta,params.cha.list(s,:),params.net.list,'--');
+        w = waveform(mySource,scnlList,(atime-seqT),atime);
+        
+    end
     
     if ~isempty(w) % if there's data, add to plot
         
@@ -2574,18 +2602,27 @@ end
 
 % Make spectrogram plot
 
-s = spectralobject(512,462,25,[20 120]);
+if ~isempty(wfs)
 
-specgram(s,wfs,'innerLabels',false);
+%     disp('Making spectrogram.')
+    
+    s = spectralobject(512,462,25,[20 120]);
+    
+    specgram(s,wfs,'fontsize',12);
+    
+    set(gcf,'Units','pixels','OuterPosition',[50 50 800 1100]); % [left bottom width height]
+    
+    % Save figure (and return filename)
+    
+    sfigname = [directory,'alert_',atype,'_',datestr(atime,'yyyymmdd_HHMMSS'),'.png']; % make figure name (with directory)
+    
+    print(sfigname,'-dpng'); % save figure
 
-% Save figure
-
-sfigname = [directory,'alert_',atype,'_spec_',datestr(atime,'yyyymmdd_HHMMSS'),'.png']; % make figure name (with directory)
-savefig([sfigname(1:end-3),'fig']); % save as .fig
-print(sfigname,'-dpng'); % save figure
-
-close; % close figure window
-
+else
+    
+   sfigname = 'none'; 
+    
+end
 
 % Plot templates
 
@@ -2631,21 +2668,33 @@ end
 
 % Turn into correlation object and plot
 
-tcobj = correlation(tempwobj);
+if ~isempty(tempwobj) % if there are templates
+    
+%     disp('Making template figure.')
+    
+    tcobj = correlation(tempwobj);
+    
+    plot(tcobj,'wiggle');
+    
+    % Save figure
+    
+    tfigname = [directory,'alert_',atype,'_temps_',datestr(atime,'yyyymmdd_HHMMSS'),'.png']; % make figure name (with directory)
+    
+    print(tfigname,'-dpng'); % save figure
+    
+    close; % close figure window
+    
+    % Combine figure names into one array
+    
+    figname = {sfigname,tfigname};
 
-plot(tcobj,'wiggle');
-
-% Save figure
-
-tfigname = [directory,'alert_',atype,'_temps_',datestr(atime,'yyyymmdd_HHMMSS'),'.png']; % make figure name (with directory)
-savefig([tfigname(1:end-3),'fig']); % save as .fig
-print(tfigname,'-dpng'); % save figure
-
-close; % close figure window
-
-% Combine figure names into one array
-
-figname = {sfigname,tfigname};
+else
+    
+    % Just use spectrogram figure name
+    
+    figname = sfigname;
+    
+end
 
 end
 
